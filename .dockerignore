@@ -1,0 +1,12 @@
+.git
+.vscode
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/*.log
+frontend/*.tsbuildinfo
+backend/.env
+backend/*.log
+backend/*.exe
+backend/uploads/*
+!backend/uploads/.gitkeep
