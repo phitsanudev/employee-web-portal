@@ -1,0 +1,600 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Employee Web Portal API",
+    "version": "1.0.0",
+    "description": "REST API for an employee profile portal built with Go Gin, GORM, PostgreSQL, JWT authentication, role-based admin access, profile updates, avatar upload, configurable skills, and change history."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    { "name": "Health" },
+    { "name": "Authentication" },
+    { "name": "Profile" },
+    { "name": "Master Data" },
+    { "name": "Admin" },
+    { "name": "Demo" }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login",
+        "description": "Authenticates a user and returns a JWT token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api/v1/master-data/skills": {
+      "get": {
+        "tags": ["Master Data"],
+        "summary": "List active skill options",
+        "responses": {
+          "200": {
+            "description": "Active skill options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Skill" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Get current employee profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      }
+    },
+    "/api/v1/profile/contact": {
+      "patch": {
+        "tags": ["Profile"],
+        "summary": "Update contact information",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateContactRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api/v1/profile/skills": {
+      "patch": {
+        "tags": ["Profile"],
+        "summary": "Replace selected skills",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateSkillsRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api/v1/profile/avatar": {
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Upload profile avatar",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["avatar"],
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Avatar uploaded",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api/v1/profile/change-logs": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "List profile change logs",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "schema": { "type": "integer", "default": 7 },
+            "description": "Number of days to include. Values above configured retention fall back to the configured default."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Change log list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/ChangeLog" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api/v1/demo/profile/reset": {
+      "post": {
+        "tags": ["Demo"],
+        "summary": "Reset demo profile data",
+        "description": "Available only outside production. Resets profile fields, default skills, and change logs for repeatable demos.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Demo profile reset",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" }
+        }
+      }
+    },
+    "/api/v1/admin/employees": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List employees",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Employee list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Employee" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Create employee",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateEmployeeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Employee created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeeResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "409": { "$ref": "#/components/responses/ConflictError" }
+        }
+      }
+    },
+    "/api/v1/admin/employees/{id}/status": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Update employee active status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateEmployeeStatusRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Employee status updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeeResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "ConflictError": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "SuccessEnvelope": {
+        "type": "object",
+        "required": ["success", "data"],
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "data": { "type": "object" }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": ["success", "error", "requestId"],
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "VALIDATION_ERROR" },
+              "message": { "type": "string", "example": "Invalid email format" }
+            }
+          },
+          "requestId": { "type": "string", "example": "a3d4f0..." }
+        }
+      },
+      "HealthResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string", "example": "ok" },
+                  "time": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "demo@employee.dev" },
+          "password": { "type": "string", "example": "password123" }
+        }
+      },
+      "LoginResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "token": { "type": "string" },
+                  "expiresAt": { "type": "string", "format": "date-time" },
+                  "user": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "email": { "type": "string", "example": "demo@employee.dev" },
+          "role": { "type": "string", "enum": ["employee", "admin"] }
+        }
+      },
+      "Skill": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "code": { "type": "string", "example": "go" },
+          "name": { "type": "string", "example": "Go" }
+        }
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "firstName": { "type": "string", "example": "Narin" },
+          "lastName": { "type": "string", "example": "Developer" },
+          "avatarUrl": { "type": "string", "example": "/uploads/avatar-1.png" },
+          "mobilePhone": { "type": "string", "example": "0812345678" },
+          "contactEmail": { "type": "string", "example": "narin.dev@example.com" },
+          "address": { "type": "string", "example": "Bangkok, Thailand" },
+          "skills": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Skill" }
+          }
+        }
+      },
+      "ProfileResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Profile" }
+            }
+          }
+        ]
+      },
+      "UpdateContactRequest": {
+        "type": "object",
+        "required": ["mobilePhone", "contactEmail", "address"],
+        "properties": {
+          "mobilePhone": { "type": "string", "example": "0812345678" },
+          "contactEmail": { "type": "string", "format": "email", "example": "narin.dev@example.com" },
+          "address": { "type": "string", "example": "Bangkok, Thailand" }
+        }
+      },
+      "UpdateSkillsRequest": {
+        "type": "object",
+        "required": ["skillIds"],
+        "properties": {
+          "skillIds": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "example": [1, 2, 4]
+          }
+        }
+      },
+      "ChangeLog": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "changeType": { "type": "string", "example": "contact" },
+          "fieldName": { "type": "string", "example": "mobile_phone" },
+          "oldValue": { "type": "string", "example": "0812345678" },
+          "newValue": { "type": "string", "example": "0812345677" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 2 },
+          "email": { "type": "string", "example": "new.employee@example.com" },
+          "role": { "type": "string", "example": "employee" },
+          "isActive": { "type": "boolean", "example": true },
+          "profile": { "$ref": "#/components/schemas/Profile" }
+        }
+      },
+      "EmployeeResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Employee" }
+            }
+          }
+        ]
+      },
+      "CreateEmployeeRequest": {
+        "type": "object",
+        "required": ["email", "password", "firstName", "lastName", "address"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "new.employee@example.com" },
+          "password": { "type": "string", "minLength": 8, "example": "password123" },
+          "role": { "type": "string", "enum": ["employee", "admin"], "example": "employee" },
+          "firstName": { "type": "string", "example": "New" },
+          "lastName": { "type": "string", "example": "Employee" },
+          "mobilePhone": { "type": "string", "example": "0800000000" },
+          "contactEmail": { "type": "string", "format": "email", "example": "new.employee@example.com" },
+          "address": { "type": "string", "example": "Bangkok, Thailand" },
+          "skillIds": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "example": [1, 2]
+          }
+        }
+      },
+      "UpdateEmployeeStatusRequest": {
+        "type": "object",
+        "required": ["isActive"],
+        "properties": {
+          "isActive": { "type": "boolean", "example": true }
+        }
+      }
+    }
+  }
+}

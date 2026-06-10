@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Employee Web Portal runtime flow</title>
+  <desc id="desc">A step-by-step flow showing frontend startup, session validation, login, profile actions, admin actions, backend layers, and persistence.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .lane { fill: #eef2f7; stroke: #cbd5e1; stroke-width: 1.5; }
+      .lane-title { font: 700 22px Arial, sans-serif; fill: #0f172a; }
+      .title { font: 800 42px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 18px Arial, sans-serif; fill: #475569; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; rx: 14; }
+      .box-blue { stroke: #2563eb; }
+      .box-green { stroke: #0f766e; }
+      .box-orange { stroke: #f97316; }
+      .box-red { stroke: #dc2626; }
+      .box-purple { stroke: #7c3aed; }
+      .heading { font: 700 22px Arial, sans-serif; fill: #0f172a; }
+      .text { font: 400 16px Arial, sans-serif; fill: #334155; }
+      .small { font: 400 14px Arial, sans-serif; fill: #475569; }
+      .code { font: 600 15px Consolas, monospace; fill: #0f172a; }
+      .pill { fill: #e0f2fe; stroke: #7dd3fc; stroke-width: 1; rx: 12; }
+      .pill-text { font: 700 13px Arial, sans-serif; fill: #0369a1; }
+      .line { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748b; stroke-width: 2; stroke-dasharray: 7 7; fill: none; marker-end: url(#arrow); }
+      .note { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1.5; rx: 12; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1120"/>
+
+  <text class="title" x="64" y="70">Employee Web Portal - Runtime Flow</text>
+  <text class="subtitle" x="64" y="104">What happens when the web app opens, validates a session, logs in, calls protected routes, and persists profile/admin changes.</text>
+
+  <rect class="lane" x="50" y="145" width="345" height="880" rx="18"/>
+  <rect class="lane" x="430" y="145" width="345" height="880" rx="18"/>
+  <rect class="lane" x="810" y="145" width="345" height="880" rx="18"/>
+  <rect class="lane" x="1190" y="145" width="345" height="880" rx="18"/>
+
+  <text class="lane-title" x="80" y="185">Browser / React</text>
+  <text class="lane-title" x="460" y="185">HTTP Routes</text>
+  <text class="lane-title" x="840" y="185">Backend Layers</text>
+  <text class="lane-title" x="1220" y="185">Storage / Files</text>
+
+  <rect class="box box-blue" x="80" y="225" width="285" height="118"/>
+  <text class="heading" x="105" y="260">1. Open Web App</text>
+  <text class="text" x="105" y="290">React mounts App.tsx</text>
+  <text class="text" x="105" y="316">Reads token/user from localStorage</text>
+
+  <rect class="box box-green" x="460" y="225" width="285" height="118"/>
+  <text class="heading" x="485" y="260">First Public Call</text>
+  <text class="code" x="485" y="292">GET /api/v1/master-data/skills</text>
+  <text class="text" x="485" y="318">Loads skill chips for UI forms</text>
+
+  <rect class="box box-green" x="840" y="225" width="285" height="118"/>
+  <text class="heading" x="865" y="260">Profile Service</text>
+  <text class="text" x="865" y="290">List active skills</text>
+  <text class="text" x="865" y="316">Return standard success envelope</text>
+
+  <rect class="box box-green" x="1220" y="225" width="285" height="118"/>
+  <text class="heading" x="1245" y="260">PostgreSQL</text>
+  <text class="text" x="1245" y="290">skills table</text>
+  <text class="small" x="1245" y="316">Seeded from backend/config/skills.json</text>
+
+  <path class="line" d="M365 284 H452"/>
+  <path class="line" d="M745 284 H832"/>
+  <path class="line" d="M1125 284 H1212"/>
+
+  <rect class="box box-orange" x="80" y="395" width="285" height="142"/>
+  <text class="heading" x="105" y="430">2A. No Session</text>
+  <text class="text" x="105" y="462">Show Login page</text>
+  <text class="text" x="105" y="488">User submits email/password</text>
+  <text class="code" x="105" y="516">POST /auth/login</text>
+
+  <rect class="box box-orange" x="460" y="395" width="285" height="142"/>
+  <text class="heading" x="485" y="430">Login Route</text>
+  <text class="code" x="485" y="462">POST /api/v1/auth/login</text>
+  <text class="text" x="485" y="490">Public route</text>
+  <text class="text" x="485" y="516">Returns JWT + user</text>
+
+  <rect class="box box-orange" x="840" y="395" width="285" height="142"/>
+  <text class="heading" x="865" y="430">Auth Service</text>
+  <text class="text" x="865" y="462">Find user by email</text>
+  <text class="text" x="865" y="488">Compare bcrypt password</text>
+  <text class="text" x="865" y="514">Create JWT token</text>
+
+  <rect class="box box-orange" x="1220" y="395" width="285" height="142"/>
+  <text class="heading" x="1245" y="430">Users + Profiles</text>
+  <text class="text" x="1245" y="462">users table</text>
+  <text class="text" x="1245" y="488">employee_profiles table</text>
+  <text class="small" x="1245" y="514">Password hash is never returned</text>
+
+  <path class="line" d="M365 466 H452"/>
+  <path class="line" d="M745 466 H832"/>
+  <path class="line" d="M1125 466 H1212"/>
+
+  <rect class="box box-blue" x="80" y="590" width="285" height="160"/>
+  <text class="heading" x="105" y="625">2B. Session Exists</text>
+  <text class="text" x="105" y="657">Refresh dashboard data</text>
+  <text class="code" x="105" y="685">GET /profile</text>
+  <text class="code" x="105" y="711">GET /profile/change-logs</text>
+  <text class="small" x="105" y="737">If token is invalid, clear session</text>
+
+  <rect class="box box-blue" x="460" y="590" width="285" height="160"/>
+  <text class="heading" x="485" y="625">Protected Routes</text>
+  <text class="code" x="485" y="657">GET /api/v1/profile</text>
+  <text class="code" x="485" y="683">GET /api/v1/profile/change-logs</text>
+  <text class="small" x="485" y="711">Authorization: Bearer &lt;token&gt;</text>
+  <text class="small" x="485" y="737">Admin also calls GET /admin/employees</text>
+
+  <rect class="box box-blue" x="840" y="590" width="285" height="160"/>
+  <text class="heading" x="865" y="625">Auth Middleware</text>
+  <text class="text" x="865" y="657">Verify JWT</text>
+  <text class="text" x="865" y="683">Attach userID to context</text>
+  <text class="text" x="865" y="709">Handler calls service</text>
+  <text class="small" x="865" y="735">401 returns to login</text>
+
+  <rect class="box box-blue" x="1220" y="590" width="285" height="160"/>
+  <text class="heading" x="1245" y="625">Read Models</text>
+  <text class="text" x="1245" y="657">profile + skills</text>
+  <text class="text" x="1245" y="683">recent change logs</text>
+  <text class="text" x="1245" y="709">admin employee list</text>
+
+  <path class="line" d="M365 670 H452"/>
+  <path class="line" d="M745 670 H832"/>
+  <path class="line" d="M1125 670 H1212"/>
+  <path class="dash" d="M235 537 V582"/>
+
+  <rect class="box box-purple" x="80" y="805" width="285" height="150"/>
+  <text class="heading" x="105" y="840">3. User Actions</text>
+  <text class="code" x="105" y="872">PATCH /profile/contact</text>
+  <text class="code" x="105" y="898">PATCH /profile/skills</text>
+  <text class="code" x="105" y="924">POST /profile/avatar</text>
+  <text class="small" x="105" y="948">Then refresh profile/history</text>
+
+  <rect class="box box-purple" x="460" y="805" width="285" height="150"/>
+  <text class="heading" x="485" y="840">Handlers</text>
+  <text class="text" x="485" y="872">Bind JSON or multipart payload</text>
+  <text class="text" x="485" y="898">Validate request shape</text>
+  <text class="text" x="485" y="924">Return success/error envelope</text>
+
+  <rect class="box box-purple" x="840" y="805" width="285" height="150"/>
+  <text class="heading" x="865" y="840">Services + Repository</text>
+  <text class="text" x="865" y="872">Business validation</text>
+  <text class="text" x="865" y="898">GORM transaction</text>
+  <text class="text" x="865" y="924">Write profile_change_logs</text>
+
+  <rect class="box box-purple" x="1220" y="805" width="285" height="150"/>
+  <text class="heading" x="1245" y="840">Persist Changes</text>
+  <text class="text" x="1245" y="872">employee_profiles</text>
+  <text class="text" x="1245" y="898">profile_change_logs</text>
+  <text class="text" x="1245" y="924">uploads/avatar files</text>
+
+  <path class="line" d="M365 880 H452"/>
+  <path class="line" d="M745 880 H832"/>
+  <path class="line" d="M1125 880 H1212"/>
+
+  <rect class="note" x="80" y="980" width="1425" height="72"/>
+  <text class="heading" x="105" y="1014">Admin-only events</text>
+  <text class="text" x="310" y="1014">Admin menu calls</text>
+  <text class="code" x="438" y="1014">GET /api/v1/admin/employees</text>
+  <text class="text" x="690" y="1014">then create/status actions call</text>
+  <text class="code" x="900" y="1014">POST /admin/employees</text>
+  <text class="text" x="1098" y="1014">or</text>
+  <text class="code" x="1122" y="1014">PATCH /admin/employees/:id/status</text>
+  <text class="small" x="105" y="1040">All admin routes pass JWT auth first, then RequireRole("admin"), then admin service and repository.</text>
+</svg>

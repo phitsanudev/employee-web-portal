@@ -1,0 +1,38 @@
+[
+  {
+    "code": "go",
+    "name": "Go",
+    "display_order": 1,
+    "is_active": true
+  },
+  {
+    "code": "react",
+    "name": "React",
+    "display_order": 2,
+    "is_active": true
+  },
+  {
+    "code": "flutter",
+    "name": "Flutter",
+    "display_order": 3,
+    "is_active": true
+  },
+  {
+    "code": "ci_cd",
+    "name": "CI/CD",
+    "display_order": 4,
+    "is_active": true
+  },
+  {
+    "code": "docker",
+    "name": "Docker",
+    "display_order": 5,
+    "is_active": true
+  },
+  {
+    "code": "csharp",
+    "name": "C#",
+    "display_order": 6,
+    "is_active": true
+  }
+]
