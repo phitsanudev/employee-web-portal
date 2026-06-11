@@ -17,6 +17,14 @@ The main API contract is available from the running backend:
 - OpenAPI JSON: `http://localhost:8080/openapi.json`
 - Health check: `http://localhost:8080/healthz`
 
+## Link URL for Test
+Back end :
+`Base URL :` https://employee-web-portal.onrender.com
+
+Front end :
+`URL :` https://employee-web-portal.vercel.app
+
+
 ## Feature List
 
 - JWT login for demo and admin accounts
